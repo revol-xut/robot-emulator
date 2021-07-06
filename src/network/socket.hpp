@@ -27,10 +27,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <tuple>
 #include <iostream>
-#include <string>
-#include <array>
 
 constexpr int kTimeout = 64;
 constexpr unsigned kWaitTime = 1;  // in Milliseconds

@@ -9,6 +9,7 @@
 
 #include <array>
 #include <optional>
+#include <string>
 
 constexpr int kBufferSize = 1024;
 

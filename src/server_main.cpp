@@ -6,14 +6,11 @@
 
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
-#include "./src/recorder/record_server.hpp"
-#include "./src/signal_handler.hpp"
+#include "./recorder/record_server.hpp"
+#include "./signal_handler.hpp"
 
-#include <chrono>
 #include <thread>
 #include <experimental/filesystem>
-
-
 
 int main(){
     signal(SIGINT, signalHandlerSigTerm);

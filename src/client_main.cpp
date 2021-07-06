@@ -4,10 +4,9 @@
 // Project: Robo Simulator
 //
 
-#include "./src/network/client.hpp"
-#include "./src/signal_handler.hpp"
+#include "./network/client.hpp"
+#include "./signal_handler.hpp"
 
-#include <chrono>
 #include <thread>
 
 const std::string ip = "127.0.0.1";

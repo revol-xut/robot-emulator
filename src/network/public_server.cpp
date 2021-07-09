@@ -21,8 +21,7 @@ PublicServer::~PublicServer() {
 };
 
 auto PublicServer::configure() -> Response {
-#define __WINDOWS__ 
-#ifdef __WINDOWS__
+#ifdef __WIN32
     WSADATA wsaData;
     int err = WSAStartup(MAKEWORD(2, 2), &wsaData);
 
@@ -56,13 +55,20 @@ auto PublicServer::configure() -> Response {
 
 
 auto PublicServer::bindToAddr() -> Response {
-    const bool kOpt = true; 
     const int kTimeoutMilisec = 10;
+    
+#ifdef __WIN32
+    const bool kOpt = true;
+#endif
+#ifdef __unix__
+    const int kOpt = 1;
+#endif
+    
     if (setsockopt(m_socket, 
             SOL_SOCKET,
             SO_REUSEADDR, 
             (char*)&kOpt,
-            sizeof(bool))) {
+            sizeof(kOpt))) {
         spdlog::critical("setsockopt failed");
         return Response::Failure;
     }
@@ -107,8 +113,8 @@ auto PublicServer::acceptConnection(bool timeout) -> AcceptedConnection {
     if (timeout) {
         spdlog::critical("Creating Timeout socket");
         constexpr unsigned int kTimeOutMilis = 5;
-        DWORD timeout = kTimeOutMilis * 100;
-        setsockopt(new_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof timeout);
+        uint32_t timeout = kTimeOutMilis * 100;
+        setsockopt(new_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
     }
 
     return_value.state = Response::Success;

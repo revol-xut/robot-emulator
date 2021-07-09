@@ -10,14 +10,16 @@
 #include <cstring>
 #include <iostream>
 
+
+#ifdef _WIN32
 bool SocketInterface::static_initialized = false;
+#endif
 
 SocketInterface::SocketInterface() {
-#ifndef __LINUX__
+#ifdef _WIN32
     if (!static_initialized) {
         initWSA();
     }
-    
 #endif
 }
 
@@ -94,15 +96,16 @@ auto operator>>(SocketInterface& socket, std::string& data) -> DataSink& {
 
 void SocketInterface::closeSocket() {
     m_valid = false;
-#if __LINUX__
+#ifdef __unix__
     close(m_socket);
-#else
+#endif
+#ifdef _WIN32
     closesocket(m_socket);
 #endif
 }
 
 
-#ifndef __LINUX__
+#ifdef _WIN32
 void SocketInterface::initWSA() {
     WSADATA wsaData;
     int err = WSAStartup(MAKEWORD(2, 2), &wsaData);

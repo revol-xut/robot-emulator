@@ -17,14 +17,14 @@ private:
     std::string m_data = "";
     
 public:
-    RecordEntry() noexcept;
+    RecordEntry() = default;
     RecordEntry(const std::string& data, unsigned int relativ_time_stamp) noexcept;
-    ~RecordEntry() noexcept;
+    ~RecordEntry() noexcept = default;
 
     /*!
     * @brief Creates a string which will be written into the record file with all relevant information (size, timestamp, data) 
     */
-    auto format() const-> std::string;
+    auto format() const -> std::string;
 
     /*!
     * @brief Returns data
@@ -32,7 +32,7 @@ public:
     auto getData() const noexcept -> std::string;
 
     /*
-        Returns Timestamp in microseconds
+    * @brief   Returns Timestamp in microseconds
     */
     auto getTimeStamp() const noexcept -> uint32_t;
 

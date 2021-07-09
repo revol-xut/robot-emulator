@@ -8,8 +8,6 @@
 #define ROBO_SIMULATOR_RECORDER_HPP
 
 #include "record_entry.hpp"
-
-// Network headers for receiving and transmitting saved data
 #include "../network/public_server.hpp"
 #include "../network/client.hpp"
 
@@ -17,7 +15,7 @@
 #include <string>
 #include <list>
 
-using Duration = std::chrono::duration<double, std::chrono::microseconds>;
+using Duration = std::chrono::microseconds;
 
 class Recorder{
 private:
@@ -50,8 +48,8 @@ private:
 public:
     static bool m_forcefull_termination; /*! Used by the Signal handler to terminate all processes */
 
-    Recorder() noexcept;
-    ~Recorder() noexcept;
+    Recorder() noexcept = default;
+    ~Recorder() noexcept = default;
 
     /*!
     * @brief automatically creates client socket and starts recording

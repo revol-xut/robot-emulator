@@ -130,8 +130,9 @@ RecordClient::~RecordClient() {
 
 void RecordClient::record(const std::string& file_path, double duration) {
 	Recorder recorder{};
-
-	recorder.receive(m_client, file_path, Duration{ duration });
+    
+    std::chrono::microseconds time{ (long int)duration };
+	recorder.receive(m_client, file_path, time);
 }
 
 auto RecordClient::operator=(RecordClient&& rhs) ->RecordClient& {
@@ -165,7 +166,7 @@ void RecordServer::listenAndAccept(const std::string& base_path, double duration
 		duration *= pow(10, 7);
 	}
 	else {
-		duration = DBL_MAX;
+		duration = std::numeric_limits<decltype(duration)>::max();
 		endless = true;
 	}
 
@@ -185,7 +186,7 @@ void RecordServer::listenAndAccept(const std::string& base_path, double duration
 				+ "_" + std::to_string(std::chrono::system_clock::now().time_since_epoch().count()) 
 				+ ".rd";
 
-			auto chrono_duration = Duration(duration - (std::chrono::system_clock::now() - start).count());
+			Duration chrono_duration{static_cast<long int>(duration - (std::chrono::system_clock::now() - start).count())};
 			m_recorder.receive(possible_connection.socket, file_name, chrono_duration);
 		}
 	}

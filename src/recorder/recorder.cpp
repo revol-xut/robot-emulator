@@ -13,10 +13,6 @@
 
 bool Recorder::m_forcefull_termination = false;
 
-Recorder::Recorder() noexcept = default;
-
-Recorder::~Recorder() noexcept = default;
-
 void Recorder::write(const std::string& path) const {
 	std::ofstream file;
 	file.open(path, std::ios_base::trunc);
@@ -79,7 +75,7 @@ void Recorder::transmittFile(DataSink& socket, const std::string& path) const {
 		// reading timestamp
 		uint32_t relative_time_stamp = 0;
 		file.read((char*)&relative_time_stamp, sizeof(relative_time_stamp));
-		relative_time_stamp = relative_time_stamp / 10;
+		relative_time_stamp = relative_time_stamp / 10; //TODO: possibly a bug
 
 		//reading data
 		data.resize(size);
@@ -110,11 +106,10 @@ void Recorder::transmittObj(DataSink& socket) const {
 
 		auto sleep_until = start + std::chrono::microseconds{ relative_time_stamp };
 		std::this_thread::sleep_until(sleep_until);
-		auto response = socket.write(rec_entry.getData());
-
-		if (response == Response::Failure) {
-			break;
-		}
+		
+        if( socket.write(rec_entry.getData()) == Response::Failure){
+            break;
+        }
 	}
 }
 

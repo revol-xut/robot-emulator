@@ -11,7 +11,7 @@
 
 #include "../type_traits/type_traits.hpp"
 
-#ifdef __LINUX__
+#ifdef __unix__
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -20,9 +20,11 @@
 #include <unistd.h>
 #endif
 
+#ifdef _WIN32 
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdio.h>
+#endif
 
 #include <cstdio>
 #include <cstdlib>
@@ -46,7 +48,7 @@ protected:
     bool m_valid = true; /*! Flag that states if this socket is still writeable or readable. */
     int m_socket = -1; /*! Socket Integer that gets passed to the system call.*/
 
-#ifndef __LINUX__
+#ifdef _WIN32
 private:
     static bool static_initialized; /*! states if the WSA already got initialized*/
     static void initWSA();

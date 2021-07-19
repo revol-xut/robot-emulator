@@ -39,7 +39,7 @@ add_executable (Server src/server_main.cpp)
 
 
 if (WIN32)
-target_link_libraries(RoboSimulator_LIB Ws2_64.lib)
+target_link_libraries(RoboSimulator_LIB wsock32 ws2_32)
 endif(WIN32)
 
 if(UNIX)
@@ -48,16 +48,16 @@ if(UNIX)
 endif(UNIX)
 
 
-target_link_libraries(RoboSimulator_LIB spdlog)
+target_link_libraries(RoboSimulator_LIB spdlog::spdlog)
 
-
-target_link_libraries(Client RoboSimulator_LIB)
-target_link_libraries(Server RoboSimulator_LIB)
+target_link_libraries(Client RoboSimulator_LIB spdlog::spdlog)
+target_link_libraries(Server RoboSimulator_LIB spdlog::spdlog)
 
 if(MSVC)
-    add_compile_options(/W4 /WX)
+     #add_definitions(/W3 /WX)
+	 add_definitions(/MD)
 else()
-    add_compile_options(-Wall -Wextra -pedantric -Werror)
+     add_definitions(-Wall -Wextra -pedantric -Werror)
 endif()
 
 

@@ -57,7 +57,7 @@ auto PublicServer::configure() -> Response {
 auto PublicServer::bindToAddr() -> Response {
     const int kTimeoutMilisec = 10;
     
-#ifdef __WIN32
+#ifdef _WIN32
     const bool kOpt = true;
 #endif
 #ifdef __unix__

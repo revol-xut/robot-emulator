@@ -4,19 +4,17 @@
 // Project: Robo Simulator
 //
 
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-
 #include "./recorder/record_server.hpp"
 #include "./signal_handler.hpp"
 
 #include <thread>
-#include <experimental/filesystem>
+#include <filesystem>
 
 int main(){
     signal(SIGINT, signalHandlerSigTerm);
 
     using namespace std::chrono_literals;
-    namespace fs = std::experimental::filesystem;
+    namespace fs = std::filesystem;
 
     std::string ip = "127.0.0.1";
     unsigned short port_rec = 8899;

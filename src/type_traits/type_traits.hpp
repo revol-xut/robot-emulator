@@ -7,6 +7,8 @@
 #ifndef ROBO_SIMULATOR_TYPE_TRAITS_HPP
 #define ROBO_SIMULATOR_TYPE_TRAITS_HPP
 
+#define NOMINMAX
+
 #include <array>
 #include <optional>
 #include <string>

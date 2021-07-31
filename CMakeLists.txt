@@ -12,6 +12,9 @@ set(CMAKE_CXX_STANDARD 17)
 #set(spdlog_DIR "C:/Program Files (x86)/spdlog/lib/cmake") # spdlog installed directory ("lib/spdlog/spdlogConfig.cmake" exists in this direcotry).
 find_package(spdlog CONFIG REQUIRED)
 #target_link_libraries(main PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
+find_package(jsoncpp CONFIG REQUIRED)
+
+
 
 add_library(RoboSimulator_LIB STATIC 
 		src/network/socket.hpp
@@ -28,7 +31,11 @@ add_library(RoboSimulator_LIB STATIC
 		src/recorder/record_server.hpp
 		src/recorder/record_server.cpp
 		src/network/crc_hash.hpp 
-		src/type_traits/type_traits.hpp)
+		src/type_traits/type_traits.hpp  
+		src/environment/environment.hpp
+		src/environment/environment.cpp
+		
+		)
 
 
 # Add source to this project's executable.
@@ -48,7 +55,7 @@ if(UNIX)
 endif(UNIX)
 
 
-target_link_libraries(RoboSimulator_LIB spdlog::spdlog)
+target_link_libraries(RoboSimulator_LIB spdlog::spdlog jsoncpp_lib jsoncpp_object)
 
 target_link_libraries(Client RoboSimulator_LIB spdlog::spdlog)
 target_link_libraries(Server RoboSimulator_LIB spdlog::spdlog)

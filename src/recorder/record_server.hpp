@@ -30,8 +30,8 @@ using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 class PlaybackClient {
 private:
-	std::string m_host;
-	unsigned short m_port;
+	std::string m_host = "";
+	unsigned short m_port = 0;
 
 	Client m_client;
 
@@ -39,7 +39,7 @@ public:
 	PlaybackClient() noexcept = default;
 	~PlaybackClient();
 
-	auto operator=(PlaybackClient&& rhs)->PlaybackClient&;
+	auto operator=(PlaybackClient&& rhs) noexcept -> PlaybackClient&;
 
 	auto connect(const std::string& host, unsigned short port ) -> Response;
 	void play_file(const std::string& path);
@@ -63,10 +63,11 @@ private:
 
 public:
 	PlaybackServer() noexcept = default;
+	PlaybackServer(const PlaybackServer& other_server); // copy constructor
 	PlaybackServer(const std::string& ip, unsigned short port);
 	~PlaybackServer();
 
-	auto operator=(PlaybackServer&& rhs)->PlaybackServer&;
+	auto operator=(PlaybackServer&& rhs) noexcept -> PlaybackServer&;
 
 	void listenAndAccept(const std::string& file, double duration = -1.0);
 	void close();
@@ -87,7 +88,7 @@ public:
 	RecordClient() noexcept = default;
 	~RecordClient();
 
-	auto operator=(RecordClient&& rhs) -> RecordClient&;
+	auto operator=(RecordClient&& rhs) noexcept -> RecordClient&;
 
 	auto connect(const std::string& host, unsigned short port) -> Response;
 	void record(const std::string& file_path, double duration = -1.0);
@@ -108,14 +109,12 @@ private:
 	PublicServer m_server;
 	Recorder m_recorder;
 
-	//std::vector<std::thread> m_currently_sending;
-
 public:
 	RecordServer() noexcept = default;
 	RecordServer(const std::string& ip, unsigned short port);
 	~RecordServer();
 
-	auto operator=(RecordServer&& rhs)->RecordServer&;
+	auto operator=(RecordServer&& rhs) noexcept -> RecordServer&;
 
 	void listenAndAccept(const std::string& base_path, double duration = -1.0);
 	void close();

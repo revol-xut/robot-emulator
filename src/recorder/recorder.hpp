@@ -49,7 +49,16 @@ public:
     static bool m_forcefull_termination; /*! Used by the Signal handler to terminate all processes */
 
     Recorder() noexcept = default;
+    Recorder(const Recorder& other_rec);
     ~Recorder() noexcept = default;
+
+    /*!
+    * @brief Move operator for Recorder classs
+    * @param other_rec other operator which will be moved from
+    * @return this updated object
+    */
+    auto operator=(const Recorder&& other_rec)noexcept ->Recorder&;
+
 
     /*!
     * @brief automatically creates client socket and starts recording

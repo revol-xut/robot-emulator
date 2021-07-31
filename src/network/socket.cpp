@@ -135,3 +135,9 @@ void SocketInterface::setValid() noexcept {
 void SocketInterface::setInvalid() noexcept {
     m_valid = false;
 }
+
+auto SocketInterface::operator=(const SocketInterface& other_sock) -> SocketInterface& {
+    m_socket = other_sock.m_socket;
+    m_valid = other_sock.m_valid;
+    return *this;
+}

@@ -47,7 +47,7 @@ void PlaybackClient::close() {
 	m_client.closeSocket();
 }
 
-auto PlaybackClient::operator=(PlaybackClient&& rhs) -> PlaybackClient& {
+auto PlaybackClient::operator=(PlaybackClient&& rhs) noexcept -> PlaybackClient& {
 	rhs.m_client = m_client;
 	rhs.m_host = m_host;
 	rhs.m_port = m_port;
@@ -64,6 +64,12 @@ PlaybackServer::PlaybackServer(const std::string& ip, unsigned short port) {
 	m_server = PublicServer{ ip, port };
 	Recorder m_recorder;
 }
+
+PlaybackServer::PlaybackServer(const PlaybackServer& other_server) {
+	m_server = other_server.m_server;
+	m_recorder = std::move(other_server.m_recorder);
+	m_file = other_server.m_file;
+};
 
 PlaybackServer::~PlaybackServer() {
 	close();
@@ -100,7 +106,7 @@ void PlaybackServer::listenAndAccept(const std::string& file, double duration) {
 }
 
 
-auto PlaybackServer::operator=(PlaybackServer&& rhs)->PlaybackServer& {
+auto PlaybackServer::operator=(PlaybackServer&& rhs) noexcept -> PlaybackServer& {
 	rhs.m_file = m_file;
 	rhs.m_server = m_server;
 	return rhs;
@@ -135,7 +141,7 @@ void RecordClient::record(const std::string& file_path, double duration) {
 	recorder.receive(m_client, file_path, time);
 }
 
-auto RecordClient::operator=(RecordClient&& rhs) ->RecordClient& {
+auto RecordClient::operator=(RecordClient&& rhs) noexcept -> RecordClient& {
 	rhs.m_client = m_client;
 	return rhs;
 }
@@ -192,7 +198,7 @@ void RecordServer::listenAndAccept(const std::string& base_path, double duration
 	}
 }
 
-auto RecordServer::operator=(RecordServer&& rhs)->RecordServer& {
+auto RecordServer::operator=(RecordServer&& rhs) noexcept -> RecordServer& {
 	rhs.m_host = m_host;
 	rhs.m_port = m_port;
 	rhs.m_server = m_server;

@@ -9,10 +9,16 @@
 
 #include <json/json.h>
 
+#include <thread>
+#include <vector>
+
+
 class Environment {
 private:
 	std::string m_config_file;
-	Json m_config;
+	Json::Value m_config;
+
+	std::vector< std::thread > m_process_threads;
 
 public:
 	Environment() noexcept = default;

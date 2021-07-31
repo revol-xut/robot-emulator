@@ -5,6 +5,7 @@
 //
 
 #include "environment.hpp"
+#include "../recorder/record_server.hpp"
 
 #include <spdlog/spdlog.h>
 #include <fstream>
@@ -24,10 +25,7 @@ Environment::Environment(const std::string& config_file) {
 
 
 void Environment::initiate() {
-
 	std::string  main_executable = m_config["main"].asString();
-
-
 	const Json::Value other_components = m_config["components"];
 
 	for (Json::Value component : other_components) {
@@ -36,14 +34,37 @@ void Environment::initiate() {
 		if(component_type == "executable"){
 			std::string path = component["path"].asString();
 			std::string arguments = component["args"].asString();
-		
-		} else if (component_type == "record_server") {
-			std::string path = component["path"].asString();
-			std::string arguments = component["record_type"].asString();
+			
+			auto lambda = [path, arguments] {
+				system((path + " " + arguments + "\0").data());
+			};
 
+			m_process_threads.emplace_back(lambda);
+
+		} else if (component_type == "record_server") {
+			std::string rec_type = component["record_type"].asString();
+			std::string path = component["record_file"].asString();
+			std::string host = component["host"].asString();
+			unsigned short port = static_cast<unsigned short>(component["port"].asInt());
 			// possible types: tcp server, tcp client, udp server, udp client
 
-			
+			std::function<void(void)> exec;
+
+			if (rec_type == "TCP_SERVER") {
+				PlaybackServer server{host, port};
+				
+				exec = [&server, path] { //&server is maybe dangerous
+					server.listenAndAccept(path, -1);
+				};
+
+			}else if (rec_type == "TCP_CLIENT") {
+				PlaybackClient client;
+				client.connect(host, port);
+
+				exec = [&client, path] { //&client is maybe dangerous
+					client.play_file(path);
+				};
+			}
 
 		}
 

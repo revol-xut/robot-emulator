@@ -58,6 +58,9 @@ public:
     explicit SocketInterface(int socket);
     ~SocketInterface();
 
+
+    auto operator=(const SocketInterface& other_socket)->SocketInterface&;
+
     /*!
      * @brief Tries to send given reference over given socket
      * @param message reference to RawMessage struct

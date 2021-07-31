@@ -13,6 +13,11 @@
 
 bool Recorder::m_forcefull_termination = false;
 
+Recorder::Recorder(const Recorder& other_rec) {
+	this->operator=(std::move(other_rec));
+}
+
+
 void Recorder::write(const std::string& path) const {
 	std::ofstream file;
 	file.open(path, std::ios_base::trunc);
@@ -224,4 +229,12 @@ void Recorder::convertToHumanReadible(const std::string& input_file, const std::
 	}
 	read_file.close();
 	write_file.close();
+}
+
+auto Recorder::operator=(const Recorder&& other_rec) noexcept -> Recorder& {
+	this->m_finished_recording = other_rec.m_finished_recording;
+	this->m_record_entries = std::move(other_rec.m_record_entries);
+	//this->m_shared_mutex = other_rec.m_shared_mutex;
+	this->m_start_recording = other_rec.m_start_recording;
+	return *this;
 }

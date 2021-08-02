@@ -7,7 +7,7 @@
 #include "client.hpp"
 
 Client::Client() {
-#ifdef __WIN32
+#ifdef _WIN32
     WSADATA wsaData;
     int err = WSAStartup(MAKEWORD(2, 2), &wsaData);
 

@@ -59,7 +59,7 @@ auto SocketInterface::readMessage() ->  std::optional<RawMessage> {
 
     // error handling if something goes wrong
     if(bytes_readen < 0){
-        int errsv = errno;
+        spdlog::debug("UDP Socket received error number:" + errno);
         m_valid = false;
         return std::nullopt;
     }
@@ -76,7 +76,7 @@ auto SocketInterface::readString() -> std::optional<std::string> {
 
     // error handling if something goes wrong
     if (bytes_readen < 0) {
-        int errsv = errno;
+        spdlog::debug("UDP Socket received error number:" + errno);
         m_valid = false;
         return std::nullopt;
     }else if(bytes_readen == 0){

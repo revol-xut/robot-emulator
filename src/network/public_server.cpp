@@ -22,14 +22,8 @@ PublicServer::~PublicServer() {
 
 auto PublicServer::configure() -> Response {
 #ifdef _WIN32
-    WSADATA wsaData;
-    int err = WSAStartup(MAKEWORD(2, 2), &wsaData);
-
-    if (err != 0) {
-        /* Tell the user that we could not find a usable */
-        /* Winsock DLL.                                  */
-        spdlog::critical("WSAStartup failed with error : {0:i}", err);
-        return Response::Failure;
+    if (!static_initialized) {
+        initWSA();
     }
 #endif
 

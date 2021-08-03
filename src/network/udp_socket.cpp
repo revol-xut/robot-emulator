@@ -7,32 +7,60 @@
 #include "udp_socket.hpp"
 
 
-SocketUdp::SocketUdp(const std::string& host, unsigned short port) : m_host(host), m_port(port) { //WSA STARTUP?
-
-    auto str_port = std::to_string(port);
-
-    int r = getaddrinfo(host.c_str(), str_port.c_str(), &m_sender_addr, &m_address_info);
-    if (r != 0) {
-        spdlog::critical("invalid address for creating an udp socket");
+SocketUdp::SocketUdp() {
+#ifdef _WIN32
+    if (!static_initialized) {
+        initWSA();
     }
+#endif
+}
 
-	m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    
+SocketUdp::SocketUdp(const Connection& this_addr) : SocketUdp() { //WSA STARTUP?
+    // cannot combine member initializer and the call of the base constrctor
+    m_host = this_addr.host;
+    m_port = this_addr.port;
+    spdlog::debug("This Socket :: host: {} port: {}", m_host, m_port);
+
+	m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); 
     if (m_socket < 0) {
         spdlog::critical("cannot create udp socket");
     }
 
+    bindSocket(); // otherwise this socket would be wild (wild socket)
 };
+
+SocketUdp::SocketUdp(const Connection& this_addr, const Connection& peer_addr) : SocketUdp(this_addr) {
+    setTarget(peer_addr);
+}
+
+
+void SocketUdp::setTarget(const Connection& peer_addr) {
+    spdlog::debug("Target Socket :: host: {} port: {}", peer_addr.host, peer_addr.port);
+
+    struct hostent* c_host;
+    c_host = gethostbyname(peer_addr.host.c_str());
+    if (c_host == nullptr) {
+        spdlog::critical("cannot resolve address");
+        return;
+    }
+
+    // address of peer 
+    m_receiver_addr.sin_family = c_host->h_addrtype;
+    memcpy((char*)&m_receiver_addr.sin_addr.s_addr,
+        c_host->h_addr_list[0], c_host->h_length);
+    m_receiver_addr.sin_port = htons(peer_addr.port);
+}
+
 
 auto SocketUdp::readMessage()->std::optional<RawMessage> {
     RawMessage message{};
     
-
-    auto n_bytes_received = recvfrom(m_socket, message.data.data(), kBufferSize, 0, &m_sender_addr, sizeof(m_sender_addr));
+    int size = sizeof(m_temp_recv_addr);
+    int n_bytes_received = recvfrom(m_socket, message.data.data(), kBufferSize, 0, (sockaddr*)&m_temp_recv_addr, &size);
 
     // error handling if something goes wrong
     if (n_bytes_received < 0) {
-        spdlog::debug("UDP Socket received error number while receiving:" + errno);
+        spdlog::debug("UDP Socket received error number while receiving: {}", this->getLastError());
         return std::nullopt;
     }
     else if (n_bytes_received == 0) {
@@ -45,18 +73,19 @@ auto SocketUdp::readMessage()->std::optional<RawMessage> {
 auto SocketUdp::readString()->std::optional<std::string> {
     std::string message;
     message.resize(kBufferSize);
-    socklen_t size = sizeof(m_sender_addr);
-    int n_bytes_received = recvfrom(m_socket, message.data(), kBufferSize, 0, &m_sender_addr, &size);
+    socklen_t size = sizeof(m_temp_recv_addr);
+    int n_bytes_received = recvfrom(m_socket, message.data(), kBufferSize, 0, (sockaddr*)&m_temp_recv_addr, &size);
     message.resize(std::max(0, n_bytes_received));
 
     // error handling if something goes wrong
     if (n_bytes_received < 0) {
-        spdlog::debug("UDP Socket received error number while receiving:" + errno);
+
+
+        spdlog::debug("UDP Socket received error number while receiving: {}", this->getLastError());
         return std::nullopt;
     } else if (n_bytes_received == 0) {
         return std::nullopt;
     }
-
     return message;
 };
 
@@ -65,11 +94,11 @@ auto SocketUdp::write(const RawMessage& message)->Response {
                             message.data.data(), 
                             message.data.size(), 
                             0, 
-                            m_address_info.ai_addr, 
-                            m_address_info.ai_addrlen);
+                            (struct sockaddr*)&m_receiver_addr,
+                            sizeof(m_receiver_addr));
 
     if (n_bytes_transmitted < 0) {
-        spdlog::debug("UDP Socket received error number while transmitting:" + errno);
+        spdlog::debug("UDP Socket received error number while transmitting: {}", this->getLastError());
         return Response::Failure;
     }
     else if (n_bytes_transmitted < message.size) {
@@ -82,10 +111,15 @@ auto SocketUdp::write(const RawMessage& message)->Response {
 };
 
 auto SocketUdp::write(const std::string& data)->Response {
-    int n_bytes_transmitted = sendto(m_socket, data.data(), data.size(), 0, m_address_info.ai_addr, m_address_info.ai_addrlen);
+    int n_bytes_transmitted = sendto(m_socket,
+        data.data(),
+        data.size(),
+        0,
+        (struct sockaddr*)&m_receiver_addr,
+        sizeof(m_receiver_addr));
 
     if (n_bytes_transmitted < 0) {
-        spdlog::debug("UDP Socket received error number while transmitting:" + errno);
+        spdlog::debug("UDP Socket received error number while transmitting: {}", this->getLastError());
         return Response::Failure;
     }
     else if (n_bytes_transmitted < data.size()) {
@@ -99,4 +133,36 @@ auto SocketUdp::write(const std::string& data)->Response {
 
 auto SocketUdp::good() const -> bool {
     return (m_socket > 0);
-}
+};
+
+
+auto SocketUdp::bindSocket() -> Response {
+    // Configuring address struct 
+    m_this_sock_addr.sin_family = AF_INET;
+    inet_pton(AF_INET, this->m_host.c_str(), &m_this_sock_addr.sin_addr);
+    m_this_sock_addr.sin_port = htons(this->m_port);
+
+
+#ifdef _WIN32
+    const bool optval = true;
+#endif
+#ifdef __unix__
+    const int optval = 1;
+#endif
+
+    int res = setsockopt(this->m_socket, SOL_SOCKET, SO_REUSEADDR, (const char*)(&optval), sizeof(optval));
+
+    if (res < 0) {
+        spdlog::debug("UDP Socket setsockopt failed: {}", this->getLastError());
+        return Response::Failure;
+    };
+
+    res = bind(this->m_socket, (struct sockaddr*)&m_this_sock_addr, sizeof(m_this_sock_addr));
+
+    if (res < 0) {
+        spdlog::debug("UDP Socket bind failed: {}", this->getLastError());
+        return Response::Failure;
+    };
+
+    return Response::Success;
+};

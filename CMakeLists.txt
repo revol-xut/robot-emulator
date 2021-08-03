@@ -37,6 +37,8 @@ add_library(RoboSimulator_LIB STATIC
 		src/network/public_server.cpp
 		src/network/client.hpp
 		src/network/client.cpp
+		src/network/udp_socket.hpp
+		src/network/udp_socket.cpp
 		src/recorder/record_entry.hpp
 		src/recorder/record_entry.cpp
 		src/recorder/recorder.hpp
@@ -72,8 +74,8 @@ include_directories("${SPDLOG_INCLUDE_DIR}")
 include_directories("${JSONCPP_INCLUDE_DIR}")
 # link external libs
 target_link_libraries(RoboSimulator_LIB PRIVATE spdlog::spdlog JsonCpp::JsonCpp )
-target_link_libraries(Client RoboSimulator_LIB)
-target_link_libraries(Server RoboSimulator_LIB)
+target_link_libraries(Client RoboSimulator_LIB spdlog::spdlog)
+target_link_libraries(Server RoboSimulator_LIB spdlog::spdlog)
 
 if(MSVC)
      #add_definitions(/W3 /WX)

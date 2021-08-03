@@ -4,12 +4,13 @@
 // Project: Robo Simulator
 //
 
-#include "./network/client.hpp"
+#include "./network/udp_socket.hpp"
 #include "./signal_handler.hpp"
 
 #include <thread>
 
-const std::string ip = "127.0.0.1";
+const std::string file = "test_record.rd";
+const std::string host = "127.0.0.1";
 constexpr unsigned short port = 8899;
 unsigned short port_play = 9988;
 
@@ -25,7 +26,7 @@ auto random_data(std::size_t size) -> std::string {
 void generate_mock_data() {
     using namespace std::chrono_literals;
     Connection connection{};
-    connection.host = ip;
+    connection.host = host;
     connection.port = port;
     Client client_socket{};
 
@@ -52,7 +53,7 @@ void generate_mock_data() {
 
 void receive_mocked_data() {
     Connection connection{};
-    connection.host = ip;
+    connection.host = host;
     connection.port = port_play;
     Client client_socket{};
 
@@ -88,13 +89,28 @@ void receive_mocked_data() {
 
 
 int main(){
+    spdlog::set_level(spdlog::level::debug);
     using namespace std::chrono_literals;
     srand((unsigned int)time(nullptr));
     signal(SIGINT, signalHandlerSigTerm);
 
-    generate_mock_data();
+    std::string this_host = "0.0.0.0";
+    std::string robot_host = "192.168.60.3";
+    unsigned short port_client = 9988;
+    unsigned short port_robot = 9008;
+    // std::string path = "./records/";
+    Connection client_a{ this_host, port_client };
+    Connection robot_addr{ robot_host, port_robot };
 
-    std::this_thread::sleep_for(15s);
-    receive_mocked_data();
-    std::this_thread::sleep_for(15s);
+    Recorder rec;
+    SocketUdp sock{client_a};
+    sock.setTarget(robot_addr);
+    
+    std::chrono::microseconds time = 10s;
+    rec.receive(sock, file, time);
+   
+    //generate_mock_data();
+    //std::this_thread::sleep_for(15s);
+    //receive_mocked_data();
+    //std::this_thread::sleep_for(15s);
 }

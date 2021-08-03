@@ -6,23 +6,47 @@
 
 #include "./recorder/record_server.hpp"
 #include "./signal_handler.hpp"
+#include "./network/udp_socket.hpp"
 
 #include <thread>
 #include <filesystem>
 
+auto random_data(std::size_t size) -> std::string {
+    std::string str(" ", size);
+
+    for (auto i = 0u; i < size; i++) {
+        str[i] = 65 + (rand() % 24);
+    }
+    return str;
+};
+
 int main(){
+    
     signal(SIGINT, signalHandlerSigTerm);
 
     using namespace std::chrono_literals;
     namespace fs = std::filesystem;
+    spdlog::set_level(spdlog::level::debug);
 
-    std::string ip = "127.0.0.1";
-    unsigned short port_rec = 8899;
-    unsigned short port_play = 9988;
-    std::string path = "./records/";
+    std::string host = "127.0.0.1";
+    unsigned short port_client = 8899;
+    unsigned short port_server = 9988;
+   // std::string path = "./records/";
+    Connection client_a{ host, port_client };
+    Connection server_a{ host, port_server };
+    SocketUdp server{ client_a, server_a };
+
+    server.bindSocket();
+    std::this_thread::sleep_for(5s);
+    std::cout << "tansmitting" << std::endl;
+    for (auto i = 0u; i < 30; i++) {
+        server.write(random_data(50));
+
+        std::this_thread::sleep_for(200ms);
+    }
 
     // creates directory if it doesn't exists
-    if (!fs::exists(path)) {
+    /*if (!fs::exists(path)) {
         fs::create_directories(path);
     }
 
@@ -50,6 +74,6 @@ int main(){
         play_backserver.close();
     }
 
-    std::cout << "Done transmitting !" << std::endl;
+    std::cout << "Done transmitting !" << std::endl; */
 }
 

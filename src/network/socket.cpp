@@ -11,17 +11,18 @@
 #include <iostream>
 
 
-#ifdef _WIN32
-bool SuperSocket::static_initialized = false;
-#endif
+#if defined(_WIN32) || defined(_WIN64) 
+bool BaseSocket::static_initialized = false;
 
-#ifdef _WIN32
-void SuperSocket::initWSA() {
-    WSADATA wsaData;
-    int err = WSAStartup(MAKEWORD(2, 2), &wsaData);
+void BaseSocket::initWSA() {
+    if (!static_initialized) {
+        return;
+    }
+
+    WSADATA wsa_data;
+    int err = WSAStartup(MAKEWORD(2, 2), &wsa_data);
 
     if (err != 0) {
-        // Could not find the windock shared library
         spdlog::critical("WSAStartup failed with error : {0:i}", err);
         throw std::runtime_error("failed in socket creation");
     }
@@ -29,22 +30,20 @@ void SuperSocket::initWSA() {
 }
 #endif
 
-auto SuperSocket::getLastError() const noexcept -> int {
+auto BaseSocket::getLastError() const noexcept -> int {
     int error_number = -1;
 #ifdef __unix__
     error_number = errno;
 #endif
-#ifdef _WIN32
+#if defined(_WIN32) || defined(_WIN64) 
     error_number = WSAGetLastError();
 #endif
     return error_number;
 }
 
 SocketInterface::SocketInterface() {
-#ifdef _WIN32
-    if (!static_initialized) {
-        initWSA();
-    }
+#if defined(_WIN32) || defined(_WIN64) 
+    BaseSocket::initWSA();
 #endif
 }
 

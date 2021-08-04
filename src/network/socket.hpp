@@ -42,7 +42,7 @@ struct Connection {
     unsigned short port = 0;
 };
 
-class SuperSocket : public DataSink, public DataSource {
+class BaseSocket : public DataSink, public DataSource {
 #ifdef _WIN32
 protected:
     static bool static_initialized; /*! states if the WSA already got initialized*/
@@ -55,7 +55,7 @@ public:
 };
 
 
-class SocketInterface :  public SuperSocket {
+class SocketInterface :  public BaseSocket {
 protected:
     bool m_valid = true; /*! Flag that states if this socket is still writeable or readable. */
     int m_socket = -1; /*! Socket Integer that gets passed to the system call.*/

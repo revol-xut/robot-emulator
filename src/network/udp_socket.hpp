@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string>
 
-class SocketUdp : public SuperSocket {
+class SocketUdp : public BaseSocket {
 protected:
 	int m_socket = -1;
 

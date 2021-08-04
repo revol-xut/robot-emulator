@@ -8,10 +8,8 @@
 
 
 SocketUdp::SocketUdp() {
-#ifdef _WIN32
-    if (!static_initialized) {
-        initWSA();
-    }
+#if defined(_WIN32) || defined(_WIN64)
+    BaseSocket::initWSA();
 #endif
 }
 
@@ -25,6 +23,12 @@ SocketUdp::SocketUdp(const Connection& this_addr) : SocketUdp() { //WSA STARTUP?
     if (m_socket < 0) {
         spdlog::critical("cannot create udp socket");
     }
+
+    static int siTimeout = 100;
+
+    if (setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&siTimeout, sizeof(siTimeout)) < 0) {
+        spdlog::critical("setsockopt failed for setting the timeout");
+    };
 
     bindSocket(); // otherwise this socket would be wild (wild socket)
 };
@@ -139,7 +143,11 @@ auto SocketUdp::good() const -> bool {
 auto SocketUdp::bindSocket() -> Response {
     // Configuring address struct 
     m_this_sock_addr.sin_family = AF_INET;
-    inet_pton(AF_INET, this->m_host.c_str(), &m_this_sock_addr.sin_addr);
+    if (m_host != "0.0.0.0") {
+        m_this_sock_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    }else {
+        inet_pton(AF_INET, this->m_host.c_str(), &m_this_sock_addr.sin_addr);
+    }
     m_this_sock_addr.sin_port = htons(this->m_port);
 
 

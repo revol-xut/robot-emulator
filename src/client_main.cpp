@@ -87,14 +87,13 @@ void receive_mocked_data() {
 
 
 
-
 int main(){
     spdlog::set_level(spdlog::level::debug);
     using namespace std::chrono_literals;
     srand((unsigned int)time(nullptr));
     signal(SIGINT, signalHandlerSigTerm);
-
-    std::string this_host = "0.0.0.0";
+    
+    std::string this_host = "127.0.0.1";
     std::string robot_host = "192.168.60.3";
     unsigned short port_client = 9988;
     unsigned short port_robot = 9008;
@@ -102,15 +101,19 @@ int main(){
     Connection client_a{ this_host, port_client };
     Connection robot_addr{ robot_host, port_robot };
 
-    Recorder rec;
-    SocketUdp sock{client_a};
-    sock.setTarget(robot_addr);
-    
-    std::chrono::microseconds time = 10s;
-    rec.receive(sock, file, time);
-   
-    //generate_mock_data();
-    //std::this_thread::sleep_for(15s);
-    //receive_mocked_data();
-    //std::this_thread::sleep_for(15s);
+    std::this_thread::sleep_for(1s);
+
+    Client client{};
+    client.establishConnection(client_a);
+
+    while (client.good()) {
+        auto response = client.readString();
+        if (response.has_value()) {
+            std::cout << "client received:" <<  response.value() << std::endl;
+        }
+        
+    }
+
+
+
 }

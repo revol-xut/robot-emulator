@@ -17,9 +17,16 @@ Environment::Environment(const std::string& config_file) {
 	Json::CharReaderBuilder rbuilder;
 	std::string errs;
 	bool parsingSuccessful = Json::parseFromStream(rbuilder, config_doc, &m_config, &errs);
+
 	if (!parsingSuccessful){
 		spdlog::critical("Failed to parse configuration\n" + errs );
 		return;
+	}
+}
+
+Environment::~Environment() {
+	for (std::thread& thread : m_process_threads) {
+		thread.join();
 	}
 }
 
@@ -35,13 +42,18 @@ void Environment::initiate() {
 			std::string path = component["path"].asString();
 			std::string arguments = component["args"].asString();
 			
-			auto lambda = [path, arguments] {
-				system((path + " " + arguments + "\0").data());
+
+			auto lambda = [path, arguments]() {
+				spdlog::debug("Starting Executable {} {}", path, arguments);
+				system((path + " " + arguments).c_str());
 			};
 
+			
 			m_process_threads.emplace_back(lambda);
+			spdlog::debug("EXEC Thread started {} {}", path, arguments);
 
-		} else if (component_type == "record_server") {
+		} else if (component_type == "playback_server") {
+			std::cout << component << std::endl;
 			std::string rec_type = component["record_type"].asString();
 			std::string path = component["record_file"].asString();
 			std::string host = component["host"].asString();
@@ -51,19 +63,30 @@ void Environment::initiate() {
 			std::function<void(void)> exec;
 
 			if (rec_type == "TCP_SERVER") {
-				PlaybackServer server{host, port};
+				std::cout << host << "|" << port << "|" << path << std::endl;
 				
-				exec = [&server, path] { //&server is maybe dangerous
+				exec = [host, port, path] () { //&server is maybe dangerous
+					spdlog::debug("Starting PlaybackServer on {}:{}", host, port);
+					PlaybackServer server{ host, port };
 					server.listenAndAccept(path, -1);
 				};
 
-			}else if (rec_type == "TCP_CLIENT") {
-				PlaybackClient client;
-				client.connect(host, port);
+				m_process_threads.emplace_back(exec);
 
-				exec = [&client, path] { //&client is maybe dangerous
+
+			}else if (rec_type == "TCP_CLIENT") {
+				
+
+				exec = [host, port, path]() {
+					spdlog::debug("Starting PlaybackClient connecting to {}:{}", host, port);
+					PlaybackClient client;
+					client.connect(host, port);
+
 					client.play_file(path);
 				};
+
+				spdlog::debug("Starting PlaybackClient connecting to {}:{}", host, port);
+				m_process_threads.emplace_back(exec);
 			}
 
 		}

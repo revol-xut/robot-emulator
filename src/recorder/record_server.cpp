@@ -8,13 +8,16 @@
 
 #include <limits>
 
-//
-// This file are primarly premade usecases for the recorder class
-//
+/*
+/* This file are primarly premade usecases for the recorder class
+/*
 
-//
-// PlaybackClient
-// 
+
+/***********************************************************/
+/*														   */
+/* PlaybackClient                                          */
+/*                                                         */
+/***********************************************************/
 
 auto PlaybackClient::connect(const std::string& host, unsigned short port) -> Response {
 	Connection connection{
@@ -55,10 +58,11 @@ auto PlaybackClient::operator=(PlaybackClient&& rhs) noexcept -> PlaybackClient&
 }
 
 
-
-//
-// PlaybackServer
-// 
+/***********************************************************/
+/*														   */
+/* PlaybackServer                                          */
+/*                                                         */
+/***********************************************************/
 
 PlaybackServer::PlaybackServer(const std::string& ip, unsigned short port) {
 	m_server = PublicServer{ ip, port };
@@ -116,9 +120,11 @@ void PlaybackServer::close() {
 	m_server.closeSocket();
 }
 
-//
-// RecordClient
-//
+/***********************************************************/
+/*														   */
+/* RecordClient                                            */
+/*                                                         */
+/***********************************************************/
 
 
 auto RecordClient::connect(const std::string& host, unsigned short port) -> Response {
@@ -151,9 +157,11 @@ void RecordClient::close() {
 }
 	
 
-//
-// RecordServer
-//
+/***********************************************************/
+/*														   */
+/* RecordServer                                            */
+/*                                                         */
+/***********************************************************/
 
 
 RecordServer::RecordServer(const std::string& ip, unsigned short port) : m_host(ip), m_port(port) {

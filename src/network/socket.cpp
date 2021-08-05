@@ -15,7 +15,7 @@
 bool BaseSocket::static_initialized = false;
 
 void BaseSocket::initWSA() {
-    if (!static_initialized) {
+    if (static_initialized) {
         return;
     }
 
@@ -83,7 +83,7 @@ auto SocketInterface::readMessage() ->  std::optional<RawMessage> {
 
     // error handling if something goes wrong
     if(bytes_readen < 0){
-        spdlog::debug("UDP Socket received error number:" + errno);
+        spdlog::debug("TCP Socket received error number:" + BaseSocket::getLastError());
         m_valid = false;
         return std::nullopt;
     }
@@ -100,7 +100,7 @@ auto SocketInterface::readString() -> std::optional<std::string> {
 
     // error handling if something goes wrong
     if (bytes_readen < 0) {
-        spdlog::debug("UDP Socket received error number:" + errno);
+        spdlog::debug("TCP Socket received error number:" + BaseSocket::getLastError());
         m_valid = false;
         return std::nullopt;
     }else if(bytes_readen == 0){

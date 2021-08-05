@@ -24,9 +24,9 @@ SocketUdp::SocketUdp(const Connection& this_addr) : SocketUdp() { //WSA STARTUP?
         spdlog::critical("cannot create udp socket");
     }
 
-    static int siTimeout = 100;
+    static int timeout = 100;
 
-    if (setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&siTimeout, sizeof(siTimeout)) < 0) {
+    if (setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout)) < 0) {
         spdlog::critical("setsockopt failed for setting the timeout");
     };
 

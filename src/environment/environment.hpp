@@ -23,9 +23,11 @@ private:
 public:
 	Environment() noexcept = default;
 	Environment(const std::string& file);
-	~Environment() noexcept = default;
+	~Environment() noexcept;
 
-
+	/*
+	* @brief Creates all processes and mocks defined in the enviromnent config file
+	*/
 	void initiate();
 
 

@@ -7,22 +7,12 @@
 #include "client.hpp"
 
 Client::Client() {
-#ifdef _WIN32
-    WSADATA wsaData;
-    int err = WSAStartup(MAKEWORD(2, 2), &wsaData);
-
-    if (err != 0) {
-        /* Tell the user that we could not find a usable */
-        /* Winsock DLL.               
-        */
-        spdlog::critical("WSAStartup failed with error : {0:i}", err);
-        throw std::runtime_error("failed in socket creation");
-    }
+#if defined(_WIN32) || defined(_WIN64)
+    BaseSocket::initWSA();
 #endif
 
-
     if ((m_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        spdlog::critical("could not create client socket");
+        spdlog::critical("could not create client socket error: {} sock: {}", BaseSocket::getLastError(), m_socket);
 
         throw std::runtime_error("failed in socket creation");
     }

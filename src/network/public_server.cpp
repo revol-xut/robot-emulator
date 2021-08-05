@@ -21,10 +21,8 @@ PublicServer::~PublicServer() {
 };
 
 auto PublicServer::configure() -> Response {
-#ifdef _WIN32
-    if (!static_initialized) {
-        initWSA();
-    }
+#if defined(_WIN32) || defined(_WIN64)
+    BaseSocket::initWSA();
 #endif
 
     if ((m_socket = (int)socket(AF_INET, SOCK_STREAM, 0)) == 0) {

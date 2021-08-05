@@ -27,53 +27,27 @@ int main(){
     using namespace std::chrono_literals;
     namespace fs = std::filesystem;
     spdlog::set_level(spdlog::level::debug);
+    srand((unsigned int)time(nullptr));
+    signal(SIGINT, signalHandlerSigTerm);
 
-    std::string host = "127.0.0.1";
-    unsigned short port_client = 8899;
-    unsigned short port_server = 9988;
-   // std::string path = "./records/";
-    Connection client_a{ host, port_client };
-    Connection server_a{ host, port_server };
-    SocketUdp server{ client_a, server_a };
+    std::string this_host = "0.0.0.0";
+    std::string robot_host = "192.168.60.3";
+    unsigned short port_client = 9988;
+    unsigned short port_robot = 9008;
+    std::string file = "./file_record.rd";
+    Connection client_a{ this_host, port_client };
+    Connection robot_addr{ robot_host, port_robot };
 
-    server.bindSocket();
-    std::this_thread::sleep_for(5s);
-    std::cout << "tansmitting" << std::endl;
-    for (auto i = 0u; i < 30; i++) {
-        server.write(random_data(50));
+    Recorder rec;
+    SocketUdp sock{ client_a };
+    sock.setTarget(robot_addr);
 
-        std::this_thread::sleep_for(200ms);
-    }
+    std::chrono::microseconds time = 10s;
+    rec.receive(sock, file, time);
 
-    // creates directory if it doesn't exists
-    /*if (!fs::exists(path)) {
-        fs::create_directories(path);
-    }
-
-    // creates record server
-    {
-        RecordServer record_server{ ip, port_rec };
-        std::cout << "start listening" << std::endl;
-        record_server.listenAndAccept("./records/example_", 15);
-        std::cout << "Ending Receiving Process" << std::endl;
-        record_server.close();
-    }
-
-    
-    auto file = *fs::directory_iterator(path);
-
-    std::cout << "using record file: " << file.path() << std::endl;
-
-    Recorder::convertToHumanReadible(file.path().string(), std::string("debug_file.hr"));
-
-    // playes first record file it found
-    {
-        PlaybackServer play_backserver{ ip, port_play };
-        std::cout << "accepting connections" << std::endl;
-        play_backserver.listenAndAccept(file.path().string(), 20);
-        play_backserver.close();
-    }
-
-    std::cout << "Done transmitting !" << std::endl; */
+    //generate_mock_data();
+    //std::this_thread::sleep_for(15s);
+    //receive_mocked_data();
+    //std::this_thread::sleep_for(15s);
 }
 

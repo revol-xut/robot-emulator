@@ -6,6 +6,7 @@
 
 #include "udp_socket.hpp"
 
+constexpr int kTimeoutErrorCode = 10060;
 
 SocketUdp::SocketUdp() {
 #if defined(_WIN32) || defined(_WIN64)
@@ -83,9 +84,11 @@ auto SocketUdp::readString()->std::optional<std::string> {
 
     // error handling if something goes wrong
     if (n_bytes_received < 0) {
-
-
-        spdlog::debug("UDP Socket received error number while receiving: {}", this->getLastError());
+        int error = this->getLastError();
+        if (error != kTimeoutErrorCode) { // windows code for timeout
+            spdlog::debug("UDP Socket received error number while receiving: {}", error);
+        }
+        
         return std::nullopt;
     } else if (n_bytes_received == 0) {
         return std::nullopt;
@@ -95,7 +98,7 @@ auto SocketUdp::readString()->std::optional<std::string> {
 
 auto SocketUdp::write(const RawMessage& message)->Response {
     int n_bytes_transmitted = sendto(m_socket, 
-                            message.data.data(), 
+                        message.data.data(), 
                             message.data.size(), 
                             0, 
                             (struct sockaddr*)&m_receiver_addr,
@@ -120,7 +123,7 @@ auto SocketUdp::write(const std::string& data)->Response {
         data.size(),
         0,
         (struct sockaddr*)&m_receiver_addr,
-        sizeof(m_receiver_addr));
+        (int)sizeof(m_receiver_addr));
 
     if (n_bytes_transmitted < 0) {
         spdlog::debug("UDP Socket received error number while transmitting: {}", this->getLastError());

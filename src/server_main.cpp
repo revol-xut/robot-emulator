@@ -21,26 +21,24 @@ auto random_data(std::size_t size) -> std::string {
 };
 
 int main(){
-    
-    signal(SIGINT, signalHandlerSigTerm);
-
     using namespace std::chrono_literals;
     namespace fs = std::filesystem;
     spdlog::set_level(spdlog::level::debug);
-    srand((unsigned int)time(nullptr));
-    signal(SIGINT, signalHandlerSigTerm);
 
-    std::string this_host = "0.0.0.0";
+    signal(SIGINT, signalHandlerSigTerm);
+    srand((unsigned int)time(nullptr));
+
+    std::string this_host = "127.0.0.1";
     std::string robot_host = "192.168.60.3";
     unsigned short port_client = 9988;
-    unsigned short port_robot = 9008;
+    unsigned short port_robot = 9009;
     std::string file = "./file_record.rd";
     Connection client_a{ this_host, port_client };
-    Connection robot_addr{ robot_host, port_robot };
+    Connection robot_addr{ this_host, port_robot };
 
     Recorder rec;
-    SocketUdp sock{ client_a };
-    sock.setTarget(robot_addr);
+    SocketUdp sock{ robot_addr };
+    //sock.setTarget(robot_addr);
 
     std::chrono::microseconds time = 10s;
     rec.receive(sock, file, time);
